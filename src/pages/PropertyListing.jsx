@@ -19,51 +19,63 @@ const PropertyListing = () => {
   const properties = useSelector((state) => state.properties.list);
   const { searchKey } = useSelector((state) => state.properties);
   const status = useSelector((state) => state.properties.status);
-  const error = useSelector((state) => state.properties.error); // Select error state
+  const error = useSelector((state) => state.properties.error);
 
-  // State for modal and confirmation dialog
+  // State for modal, confirmation dialog, city, and price range
   const [open, setOpen] = useState(false);
   const [currentProperty, setCurrentProperty] = useState(null);
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // Confirmation dialog state
-  const [propertyToDelete, setPropertyToDelete] = useState(null); // Property ID for deletion
-  const [selectedCity, setSelectedCity] = useState(""); // State for selected city
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState(null);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedPriceRange, setSelectedPriceRange] = useState([0, 50000]); // State for price range
 
   useEffect(() => {
     dispatch(fetchProperties());
   }, [dispatch]);
 
   const handleEdit = (property) => {
-    setCurrentProperty(property); // Set the property to be edited
-    setOpen(true); // Open the modal
+    setCurrentProperty(property);
+    setOpen(true);
   };
 
   const handleDeleteClick = (propertyId) => {
-    setPropertyToDelete(propertyId); // Set the property ID for deletion
-    setOpenConfirmDialog(true); // Open the confirmation dialog
+    setPropertyToDelete(propertyId);
+    setOpenConfirmDialog(true);
   };
 
   const handleDeleteConfirm = () => {
     if (propertyToDelete) {
-      dispatch(deleteProperty(propertyToDelete)); // Dispatch delete action
-      setPropertyToDelete(null); // Reset property ID
+      dispatch(deleteProperty(propertyToDelete));
+      setPropertyToDelete(null);
     }
-    setOpenConfirmDialog(false); // Close the dialog
+    setOpenConfirmDialog(false);
   };
 
   const handleDeleteCancel = () => {
-    setPropertyToDelete(null); // Reset property ID
-    setOpenConfirmDialog(false); // Close the dialog
+    setPropertyToDelete(null);
+    setOpenConfirmDialog(false);
   };
 
   const handleClose = () => {
     setOpen(false);
-    setCurrentProperty(null); // Reset the current property
+    setCurrentProperty(null);
   };
-  // Function to apply city filter from ApplyFilters component
+
+  // Handle city filter change
   const handleFilterChange = (city) => {
     setSelectedCity(city);
   };
-  // Filter properties based on search key and selected city
+
+  // Handle price range filter change
+  const handlePriceRangeChange = (range) => {
+    setSelectedPriceRange(range);
+  };
+// Handle reset filters
+const handleResetFilters = () => {
+  setSelectedCity("");
+  setSelectedPriceRange([0, 50000]); // Reset price range
+};
+  // Filter properties based on search key, selected city, and price range
   const filteredData = properties.filter((item) => {
     const locationMatch =
       item.location &&
@@ -71,18 +83,29 @@ const PropertyListing = () => {
     const workspaceMatch =
       item.workspaceName &&
       item.workspaceName.toLowerCase().includes(searchKey.toLowerCase());
-    const cityMatch = selectedCity === "" || item.location.toLowerCase() === selectedCity.toLowerCase(); // Match selected city
-    return (locationMatch || workspaceMatch) && cityMatch;
+    const cityMatch =
+      selectedCity === "" ||
+      item.location.toLowerCase() === selectedCity.toLowerCase();
+    const priceMatch =
+      item.price >= selectedPriceRange[0] &&
+      item.price <= selectedPriceRange[1]; // Price range filter
+    return (locationMatch || workspaceMatch) && cityMatch && priceMatch;
   });
+  
   return (
     <>
       {status === "loading" ? (
         <p>Loading...</p>
       ) : (
         <>
-          {error && <Alert severity="error">{error}</Alert>}{" "}
-          {/* Show error alert */}
-          <ApplyFilters onFilterChange={handleFilterChange} />
+          {error && <Alert severity="error">{error}</Alert>}
+          <ApplyFilters
+            onFilterChange={handleFilterChange}
+            onPriceRangeChange={handlePriceRangeChange}
+            onResetFilters={handleResetFilters}
+            setSelectedCity={setSelectedCity}
+          />
+
           {filteredData && filteredData.length > 0 ? (
             <Grid container spacing={2}>
               {filteredData.map((property) => (
@@ -96,11 +119,10 @@ const PropertyListing = () => {
               ))}
             </Grid>
           ) : (
-            <p>No properties found.</p> // Show message when no properties match
+            <p>No properties found.</p>
           )}
         </>
       )}
-      {/* Edit Property Modal */}
       {currentProperty && (
         <EditPropertyModal
           open={open}
@@ -108,7 +130,6 @@ const PropertyListing = () => {
           property={currentProperty}
         />
       )}
-      {/* Confirmation Dialog for Deletion */}
       <Dialog
         open={openConfirmDialog}
         onClose={handleDeleteCancel}
