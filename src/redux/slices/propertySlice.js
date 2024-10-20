@@ -54,8 +54,13 @@ const propertySlice = createSlice({
     list: [],
     status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,
+    searchKey: "",
   },
-  reducers: {},
+  reducers: {
+    setSearchKey: (state, { payload }) => {
+      state.searchKey = payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Fetch properties
@@ -108,6 +113,6 @@ const propertySlice = createSlice({
       });
   },
 });
+export const { setSearchKey } = propertySlice.actions;
 
-// Export the reducer to be used in the store
 export default propertySlice.reducer;

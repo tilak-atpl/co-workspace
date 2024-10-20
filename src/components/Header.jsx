@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -6,12 +6,26 @@ import {
   TextField,
   Button,
   Box,
+  InputAdornment,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search"; // Import SearchIcon
 import logo from "../assets/logo.svg"; // Add your logo here
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setSearchKey } from "../redux/slices/propertySlice";
 
 const Header = () => {
   let navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  let dispatch = useDispatch();
+  useEffect(() => {
+      dispatch(setSearchKey(search));
+  }, [search]);
+  // Handle search input change
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value); // Update search state
+  };
+
   return (
     <AppBar
       position="static"
@@ -31,10 +45,19 @@ const Header = () => {
           {/* Search Bar */}
           <TextField
             variant="outlined"
-            placeholder="Search properties..."
+            placeholder="Search location or workspace..."
             size="small"
             fullWidth
             style={{ maxWidth: "500px" }}
+            value={search} // Set value to search state
+            onChange={handleSearchChange} // Handle input change
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon /> {/* Search icon */}
+                </InputAdornment>
+              ),
+            }}
           />
         </Box>
 
@@ -47,7 +70,7 @@ const Header = () => {
               navigate("/add-property");
             }}
           >
-            Add Your-Property
+            Add Your Property
           </Button>
           <Button
             variant="text"
