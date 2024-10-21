@@ -23,7 +23,7 @@ const validationSchema = yup.object({
   description: yup.string().required("Description is required"),
   propertyType: yup.string().required("Property type is required"),
 });
-
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 const PropertyForm = () => {
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -56,7 +56,7 @@ const PropertyForm = () => {
 
       setLoading(true);
       try {
-        await axios.post("http://127.0.0.1:5000/api/properties", formData, {
+        await axios.post(`${SERVER_URL}/api/properties`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         setOpenSnackbar(true);
