@@ -25,8 +25,8 @@ const validationSchema = yup.object({
 });
 
 const PropertyForm = () => {
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [errorSnackbar, setErrorSnackbar] = useState(false);
@@ -48,9 +48,11 @@ const PropertyForm = () => {
       formData.append("price", values.price);
       formData.append("description", values.description);
       formData.append("propertyType", values.propertyType);
-      if (image) {
-        formData.append("image", image); // Append the image file
-      }
+
+      // Append all selected images
+      images.forEach((image) => {
+        formData.append("images", image); // Append each image file
+      });
 
       setLoading(true);
       try {
@@ -59,8 +61,8 @@ const PropertyForm = () => {
         });
         setOpenSnackbar(true);
         formik.resetForm();
-        setImage(null);
-        setImagePreview("");
+        setImages([]); // Clear images after successful submission
+        setImagePreviews([]); // Clear previews after submission
       } catch (error) {
         console.error(error);
         setErrorSnackbar(true);
@@ -72,11 +74,9 @@ const PropertyForm = () => {
 
   // Handle image change and preview
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+    const files = Array.from(e.target.files);
+    setImages(files); // Set images with all selected files
+    setImagePreviews(files.map((file) => URL.createObjectURL(file))); // Create previews for all files
   };
 
   const handleCloseSnackbar = () => {
@@ -165,15 +165,23 @@ const PropertyForm = () => {
 
         {/* Image Upload */}
         <Grid item xs={12}>
-          <Typography variant="body2">Upload Image:</Typography>
-          <input accept="image/*" type="file" onChange={handleImageChange} />
-          {imagePreview && (
-            <div>
-              <img
-                src={imagePreview}
-                alt="Preview"
-                style={{ width: "200px", marginTop: "10px" }}
-              />
+          <Typography variant="body2">Upload Images:</Typography>
+          <input
+            accept="image/*"
+            type="file"
+            multiple
+            onChange={handleImageChange}
+          />
+          {imagePreviews.length > 0 && (
+            <div style={{ marginTop: "10px" }}>
+              {imagePreviews.map((preview, index) => (
+                <img
+                  key={index}
+                  src={preview}
+                  alt={`Preview ${index + 1}`}
+                  style={{ width: "200px", marginRight: "10px" }}
+                />
+              ))}
             </div>
           )}
         </Grid>

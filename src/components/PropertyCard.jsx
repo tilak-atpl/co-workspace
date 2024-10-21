@@ -9,7 +9,7 @@ const PropertyCard = ({ property, onEdit, onDelete }) => {
     console.log("url", `${SERVER_URL}${property.image}`);
   }, [property]);
 
-  const imageUrl = `${SERVER_URL}${property.image}`; // URL of the property image
+  const imageUrl = `${SERVER_URL}${property.images[0]}`; // URL of the property image
 
   return (
     <Card
